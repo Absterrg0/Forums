@@ -7,7 +7,6 @@ declare module 'next-auth'{
         email:string,
         username:string,
         isAdmin?:boolean,
-        image:string
     }
     interface Session{
         user:{
@@ -16,7 +15,6 @@ declare module 'next-auth'{
             email:string,
             username:string,
             isAdmin?:boolean,
-            image:string
         }& DefaultSession["user"]
     }
 }
@@ -29,6 +27,5 @@ declare module 'next-auth/jwt'{
         email:string,
         username:string,
         isAdmin?:boolean,
-        image:string
     }
 }

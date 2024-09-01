@@ -14,7 +14,6 @@ export async function POST(req:NextRequest,res:NextResponse){
                 username:body.username,
                 email:body.email,
                 password:hashedPassword,
-                image:body.image
             }
         })
         return NextResponse.json({

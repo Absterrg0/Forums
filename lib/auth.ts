@@ -33,7 +33,6 @@ export const authValues: AuthOptions = {
                         name:user.name,
                         username:user.username,
                         email:user.email,
-                        image:user.image
                     };
                 }catch(e){
                     console.error(e);
@@ -67,7 +66,6 @@ export const authValues: AuthOptions = {
                     username : token.username,
                     email : token.email,
                     name : token.name,
-                    image:token.image
                 }
             }
             return session;

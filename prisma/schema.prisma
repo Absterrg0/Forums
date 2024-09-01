@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,26 +7,38 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-
-model User{
-  id        Int       @id@default(autoincrement())
+model User {
+  id        Int       @id @default(autoincrement())
   name      String
   username  String    @unique
   email     String
   password  String
   isAdmin   Boolean   @default(false)
-  image     String    @default("/user.png")
-  forum     Forums[]
-
+  forums    Forums[]
+  comments  Comment[] // User's comments
 }
 
-model Forums{
-  id          Int       @id@default(autoincrement())
+model Forums {
+  id          Int       @id @default(autoincrement())
   title       String
   description String
   tag         String
   authorId    Int
-  author      User      @relation(fields: [authorId],references: [id])
-   
+  author      User      @relation(fields: [authorId], references: [id])
+  comments    Comment[] @relation("ForumComments")
+}
+
+model Comment {
+  id        Int       @id @default(autoincrement())
+  content   String
+  authorId  Int
+  forumId   Int
+  parentId  Int?      // Nullable field, no default value
+  author    User      @relation(fields: [authorId], references: [id])
+  forum     Forums    @relation("ForumComments", fields: [forumId], references: [id])
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
