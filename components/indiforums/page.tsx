@@ -2,17 +2,26 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
-import { FaUser, FaPlus, FaSignOutAlt } from 'react-icons/fa';
+import { FaUser, FaPlus, FaSignOutAlt, FaArrowLeft } from 'react-icons/fa';
 
 // Interfaces
+interface User {
+    id: number;
+    name: string;
+    username: string;
+    email: string;
+    password: string;
+    isAdmin: boolean;
+}
 interface Forum {
     id: number;
     title: string;
     description: string;
     tag: string;
+    author: User; // This should be a User object
 }
 
 interface Comment {
@@ -23,7 +32,7 @@ interface Comment {
     parentId?: number; // Nullable field
     createdAt: string; // ISO date string
     createdBy: string; // Author's name
-    author: { name: string }
+    author: { username: string } // Updated to include username
     replies?: Comment[] // Nested replies
 }
 
@@ -47,6 +56,7 @@ export default function ForumDetails() {
                 setError(null);
                 const response = await axios.get<Forum>(`/api/forums/update/${id}`);
                 setForum(response.data);
+                console.log(response.data);
 
                 const commentsResponse = await axios.get<Comment[]>(`/api/forums/update/${id}/comments`);
                 setComments(commentsResponse.data);
@@ -65,12 +75,17 @@ export default function ForumDetails() {
         fetchForumDetails();
     }, [id, router]);
 
-    const handleCreate = () =>{
-        router.push('/forums/create')
-    }
-    const handleSignOut = () => {
-        // Implement sign-out logic here
-        // e.g., signOut() from next-auth
+    const handleCreate = () => {
+        router.push('/forums/create');
+    };
+
+    const handleSignOut = async () => {
+        try {
+            await signOut({ redirect: false });
+            router.push('/'); // Redirect to login page after sign-out
+        } catch (error) {
+            console.error('Error during sign-out:', error);
+        }
     };
 
     const handleCommentSubmit = async (e: React.FormEvent) => {
@@ -242,7 +257,7 @@ export default function ForumDetails() {
             .map(reply => (
                 <div key={reply.id} className="ml-4 mt-2 border-l-2 border-blue-200 pl-2">
                     <div className="flex items-start mb-2">
-                        <span className="font-semibold">{reply.author.name}</span>
+                        <span className="font-semibold">{reply.author.username}</span>
                         <p className="ml-2 text-gray-700">{reply.content}</p>
                     </div>
                     {renderReplies(reply.id)}
@@ -277,7 +292,7 @@ export default function ForumDetails() {
                     </li>
                     <li>
                         <motion.button
-                            onClick={() => router.push('/create')}
+                            onClick={handleCreate}
                             className="flex items-center p-2 text-gray-800 hover:bg-blue-300 rounded-lg transition-colors duration-300 w-full text-left"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
@@ -304,8 +319,21 @@ export default function ForumDetails() {
             <div className="flex-1 p-8 ml-64 bg-gray-100">
                 {forum && (
                     <div className="bg-white p-6 rounded-lg shadow-md mb-6 mt-20">
+                        <div className="flex items-center justify-between mb-4">
+                            <button
+                                onClick={() => router.push('/forums')}
+                                className="flex items-center text-blue-500 hover:underline"
+                            >
+                                <FaArrowLeft className="mr-2" />
+                                Back to Forum
+                            </button>
+                            <span className="text-gray-600">{forum.author?.username}</span>
+                        </div>
                         <h1 className="flex justify-center text-3xl font-bold mb-2">{forum.title}</h1>
-                        <p className="text-gray-700">{forum.description}</p>
+                        <div
+                            className="text-gray-700"
+                            dangerouslySetInnerHTML={{ __html: forum?.description }}
+                        />
                     </div>
                 )}
 
@@ -316,7 +344,7 @@ export default function ForumDetails() {
                         .map(comment => (
                             <div key={comment.id} className="mb-4">
                                 <div className="flex items-start mb-2">
-                                    <span className="font-semibold">-{comment.author.name}</span>
+                                    <span className="font-semibold">-{comment.author.username}</span>
                                     <p className="ml-2 text-gray-700"><br />{comment.content}</p>
                                 </div>
                                 <div className="ml-4 mt-2 border-l-2 border-blue-200 pl-2">

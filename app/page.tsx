@@ -1,10 +1,10 @@
-import PageContent from "@/components/landingpage/Main";
-import NavBar from "@/components/landingpage/NavBar";
+import PageContent from '@/components/landingpage/Main';
+import NavBar from '@/components/landingpage/NavBar';
 export default function Home() {
   return (
-      <div className="">
+    <div>
         <NavBar></NavBar>
         <PageContent></PageContent>
-      </div>
+    </div>
   );
 }

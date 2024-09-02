@@ -1,13 +1,23 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { useSession } from 'next-auth/react';
 import { ThreeDCardDemo } from "./Threecard";
 
 export default function PageContent() {
+    const { data: session } = useSession();
     const router = useRouter();
-    const handleGetStarted = () =>{
-        router.push('/signup')
-    }
+
+    const handleGetStarted = () => {
+        if (!session?.user) {
+            // Redirect to the sign-up page if the user is not logged in
+            router.push('/signup');
+        } else {
+            // Redirect to the forums page if the user is logged in
+            router.push('/forums');
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-r from-purple-50 via-purple-100 to-purple-200 py-16 px-8">
             {/* Main Content Section */}
@@ -20,7 +30,7 @@ export default function PageContent() {
                     className="mb-16 lg:mb-24 px-4"
                 >
                     <blockquote className="text-4xl font-semibold italic text-purple-900 mb-4">
-                        "Transforming ideas into reality through collaboration and creativity."
+                    &quot;Transforming ideas into reality through collaboration and creativity.&quot;
                     </blockquote>
                     <p className="text-lg leading-relaxed text-gray-800 mb-8">
                         Welcome to a dynamic hub where technology meets innovation. Engage in thought-provoking discussions, collaborate on cutting-edge projects, and connect with like-minded individuals. Join us in shaping the future of tech with a community that values creativity and progress.

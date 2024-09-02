@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { useState } from 'react';
 import { FaUserCircle } from 'react-icons/fa'; // Import a user icon
+import Search from './ui/search';
 
 export default function NavBar() {
   const { data: session } = useSession();
@@ -20,7 +21,7 @@ export default function NavBar() {
   };
 
   const handleProfile = () => {
-    router.push('/profile');
+    router.push('/myprofile');
   };
 
   const handleSignOut = () => {
@@ -31,6 +32,16 @@ export default function NavBar() {
     router.push('/forums/create');
   };
 
+  const handleForums = () => {
+    if (!session?.user) {
+      // Redirect to the sign-in page if the user is not logged in
+      router.push('/api/auth/signin');
+    } else {
+      // Redirect to the forums page if the user is logged in
+      router.push('/forums');
+    }
+  };
+
   return (
     <motion.nav
       initial={{ y: -50, opacity: 0 }}
@@ -39,108 +50,123 @@ export default function NavBar() {
       className="bg-white border-b border-gray-200 shadow-lg"
     >
       <div className="mx-auto flex justify-between items-center py-4 px-6">
-        {/* Logo Section */}
-        <motion.div
-          initial={{ scale: 0.8 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="text-3xl font-bold text-gray-800"
-        >
-          MuktiForums
-        </motion.div>
-
-        {/* Navigation Links */}
-        <div className="flex items-center space-x-6">
-          <motion.a
-            href="/forums"
-            className={clsx(
-              'text-gray-700 hover:text-gray-900',
-              'transition-colors duration-300'
-            )}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Forums
-          </motion.a>
-          {/* New Mukti Div */}
+        {/* Flex container for logo and search */}
+        <div className="flex items-center w-full">
+          {/* Logo Section */}
           <motion.div
-            className={clsx(
-              'text-gray-700 hover:text-gray-900 font-semibold',
-              'transition-colors cursor-pointer duration-300'
-            )}
-            onClick={() => router.push('/mukti')}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="text-3xl font-bold text-gray-800 flex-shrink-0"
           >
-            Mukti
+            MuktiForums
           </motion.div>
-          {session ? (
-            <div className="relative">
-              <motion.div
-                whileHover={{ scale: 1.1 }}
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                className={clsx('flex items-center cursor-pointer')}
-              >
-                {/* User Icon */}
-                <FaUserCircle className="text-gray-700 text-2xl" />
-                <span className="ml-2 text-gray-700">
-                  {session.user.name}
-                </span>
-              </motion.div>
-              {dropdownOpen && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3 }}
-                  className="absolute right-0 mt-2 w-56 bg-white text-gray-800 rounded-lg shadow-lg z-50"
-                >
-                  <button
-                    onClick={handleProfile}
-                    className="block w-full px-4 py-2 text-left hover:bg-gray-100"
-                  >
-                    Profile
-                  </button>
-                  <button
-                    onClick={handleDiscussion}
-                    className="block w-full px-4 py-2 text-left hover:bg-gray-100"
-                  >
-                    Create Forum
-                  </button>
-                  <button
-                    onClick={handleSignOut}
-                    className="block w-full px-4 py-2 text-left hover:bg-gray-100"
-                  >
-                    Sign Out
-                  </button>
-                </motion.div>
+
+          {/* Centered Search Component */}
+          <div className="flex-grow flex justify-center">
+            <motion.div
+              className="w-full max-w-md"
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Search />
+            </motion.div>
+          </div>
+
+          {/* Navigation Links */}
+          <div className="flex items-center space-x-6 cursor-pointer flex-shrink-0">
+            <motion.button
+              onClick={handleForums}
+              className={clsx(
+                'text-gray-700 hover:text-gray-900',
+                'transition-colors duration-300'
               )}
-            </div>
-          ) : (
-            <>
-              <motion.button
-                onClick={handleSignIn}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={clsx(
-                  'text-gray-700 hover:text-gray-900',
-                  'transition-colors duration-300'
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Forums
+            </motion.button>
+            {/* New Mukti Div */}
+            <motion.div
+              className={clsx(
+                'text-gray-700 hover:text-gray-900 font-semibold',
+                'transition-colors cursor-pointer duration-300'
+              )}
+              onClick={() => router.push('/mukti')}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Mukti
+            </motion.div>
+            {session ? (
+              <div className="relative">
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className={clsx('flex items-center cursor-pointer')}
+                >
+                  {/* User Icon */}
+                  <FaUserCircle className="text-gray-700 text-2xl" />
+                  <span className="ml-2 text-gray-700">
+                    {session.user.name}
+                  </span>
+                </motion.div>
+                {dropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute right-0 mt-2 w-56 bg-white text-gray-800 rounded-lg shadow-lg z-50"
+                  >
+                    <button
+                      onClick={handleProfile}
+                      className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+                    >
+                      Profile
+                    </button>
+                    <button
+                      onClick={handleDiscussion}
+                      className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+                    >
+                      Create Forum
+                    </button>
+                    <button
+                      onClick={handleSignOut}
+                      className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+                    >
+                      Sign Out
+                    </button>
+                  </motion.div>
                 )}
-              >
-                Sign In
-              </motion.button>
-              <motion.button
-                onClick={handleSignup}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={clsx(
-                  'bg-blue-500 text-white py-2 px-4 rounded-md',
-                  'hover:bg-blue-600 transition-colors duration-300'
-                )}
-              >
-                Sign Up
-              </motion.button>
-            </>
-          )}
+              </div>
+            ) : (
+              <>
+                <motion.button
+                  onClick={handleSignIn}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={clsx(
+                    'text-gray-700 hover:text-gray-900',
+                    'transition-colors duration-300'
+                  )}
+                >
+                  Sign In
+                </motion.button>
+                <motion.button
+                  onClick={handleSignup}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={clsx(
+                    'bg-blue-500 text-white py-2 px-4 rounded-md',
+                    'hover:bg-blue-600 transition-colors duration-300'
+                  )}
+                >
+                  Sign Up
+                </motion.button>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </motion.nav>

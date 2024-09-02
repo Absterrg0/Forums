@@ -12,7 +12,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
     try {
         const response = await client.forums.findFirst({
-            where: { id: forumId }
+            where: { id: forumId },
+            include:{author:true}
         });
 
         if (!response) {
@@ -64,7 +65,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
 }
 
-// DELETE - Delete Forum (Authenticated Access)
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getServerSession(authValues);
 
@@ -78,8 +78,21 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 
     try {
+        const forum = await client.forums.findUnique({
+            where: { id: forumId }
+        });
+
+        if (!forum) {
+            return NextResponse.json({ msg: "Forum not found" }, { status: 404 });
+        }
+
+        // Check if the user is the author or an admin
+        if (session.user.id !== forum.authorId && !session.user.isAdmin) {
+            return NextResponse.json({ msg: "Forbidden" }, { status: 403 });
+        }
+
         const deletedForum = await client.forums.delete({
-            where: { id: forumId, authorId: session.user.id }
+            where: { id: forumId }
         });
 
         return NextResponse.json({ deletedForum });

@@ -8,10 +8,16 @@ import clsx from 'clsx';
 import { FaUser, FaPlus, FaSignOutAlt } from 'react-icons/fa';
 import { useSession, signOut } from 'next-auth/react';
 
+interface UpdateUserResponse {
+    msg?: string; // For error messages
+    // Define other fields based on your response schema if needed
+}
+
+
 interface Forum {
     id: number;
     title: string;
-    description: string;
+    description: string; // HTML content
     tag: string;
     authorId: number;
 }
@@ -37,13 +43,11 @@ export default function MyProfile() {
             if (!session?.user?.id) return;
 
             try {
-                const profileResponse = await axios.get<UserProfile>(`/api/user`);
-                const forumsResponse = await axios.get<Forum[]>('/api/user-forums');
+                const profileResponse = await axios.get<UserProfile>(`/api/user/details`);
                 setProfile(profileResponse.data);
-                setForums(forumsResponse.data);
             } catch (error) {
-                console.error("Error fetching profile and forums", error);
-                setError("Failed to load profile or forums.");
+                console.error("Error fetching profile", error);
+                setError("Failed to load profile.");
             } finally {
                 setLoading(false);
             }
@@ -51,23 +55,52 @@ export default function MyProfile() {
         fetchProfileAndForums();
     }, [session?.user?.id]);
 
+    useEffect(() => {
+        async function fetchForums() {
+          if (!profile?.id) return;
+      
+          try {
+            const forumsResponse = await axios.get<Forum[]>(`/api/forums/details`);
+            console.log("Forums Response:", forumsResponse.data); // Add this line
+            setForums(forumsResponse.data);
+          } catch (error) {
+            console.error("Error fetching forums", error);
+            setError("Failed to load forums.");
+          }
+        }
+      
+        if (profile) {
+          fetchForums();
+        }
+      }, [profile]);
+      
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setProfile({
-            ...profile,
-            [e.target.name]: e.target.value,
-        } as UserProfile);
+        if (profile) {
+            setProfile({
+                ...profile,
+                [e.target.name]: e.target.value,
+            });
+        }
     };
 
     const handleSaveChanges = async () => {
         if (!profile) return;
         try {
-            await axios.put(`/api/user/${profile.id}`, profile);
-            alert('Profile updated successfully!');
+            const response = await axios.put<UpdateUserResponse>(`/api/user/${profile.id}`, profile); // Fixed URL
+    
+            if (response.data.msg) {
+                alert(response.data.msg);
+            } else {
+                alert('Profile updated successfully!');
+            }
         } catch (error) {
             console.error('Error updating profile:', error);
-            alert('Failed to update profile.');
+            alert('Username already exists. Please try a different one');
         }
     };
+    
+    
 
     const handleDelete = async (forumId: number) => {
         const confirmDelete = window.confirm('Are you sure you want to delete this forum?');
@@ -86,15 +119,10 @@ export default function MyProfile() {
     const handleSignOut = async () => {
         try {
             await signOut({ redirect: false });
-            router.push('/login');
+            router.push('/');
         } catch (error) {
             console.error('Error during sign-out:', error);
         }
-    };
-
-    const truncateDescription = (description: string, wordLimit: number) => {
-        const words = description.split(' ');
-        return words.length <= wordLimit ? description : words.slice(0, wordLimit).join(' ') + '...';
     };
 
     if (loading) {
@@ -360,7 +388,7 @@ export default function MyProfile() {
                             >
                                 <div>
                                     <h3 className="text-xl font-semibold text-gray-800 mb-2">{forum.title}</h3>
-                                    <p className="text-gray-600 mb-4">{truncateDescription(forum.description, 20)}</p>
+                                    <div className="text-gray-600 mb-4" dangerouslySetInnerHTML={{ __html: forum.description }}></div>
                                     <motion.button
                                         onClick={() => router.push(`/forums/${forum.id}`)}
                                         className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-300"

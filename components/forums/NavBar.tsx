@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
 import { useRouter } from 'next/navigation';
+import Search from '../landingpage/ui/search'; // Adjust the import path if necessary
 
 export default function NavBar() {
   const router = useRouter();
@@ -31,6 +32,11 @@ export default function NavBar() {
           className="text-3xl font-bold ml-6 text-gray-800"
         >
           MuktiForums
+        </motion.div>
+
+        {/* Centered Search Bar */}
+        <motion.div className="w-full">
+          <Search />
         </motion.div>
 
         {/* Navigation Links */}

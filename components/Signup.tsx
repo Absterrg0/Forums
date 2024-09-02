@@ -28,8 +28,12 @@ export default function Signup() {
             if (response.status === 200) {
                 router.push('/api/auth/signin');
             }
-        } catch (err) {
-            setError("Error while signing up. Please try again.");
+        } catch (err: any) {
+            if (err.response && err.response.data.msg === "Username already exists") {
+                setError("Username already exists. Please choose a different username.");
+            } else {
+                setError("Error while signing up. Please try again.");
+            }
             console.error(err);
         } finally {
             setLoading(false);
