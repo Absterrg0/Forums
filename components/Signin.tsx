@@ -2,6 +2,8 @@
 import React, { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from 'next/navigation';
+import { FcGoogle } from 'react-icons/fc';
+import { FaGithub } from "react-icons/fa";
 
 export default function SignIn() {
     const [username, setUsername] = useState('');
@@ -23,16 +25,26 @@ export default function SignIn() {
             });
 
             if (result?.error) {
-                setError(result.error); // Set error message if there is an issue
+                setError(result.error);
             } else if (result?.ok) {
-                router.push('/'); // Redirect to a dashboard or home page after successful sign-in
+                router.push('/');
             }
         } catch (err) {
-            setError("Error while signing in. Please try again."); // Generic error message
+            setError("Error while signing in. Please try again.");
             console.error(err);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleGoogleSignIn = async () => {
+        setLoading(true);
+        signIn("google", { callbackUrl: "/" });
+    };
+
+    const handleGitHubSignIn = async () => {
+        setLoading(true);
+        signIn('github', { callbackUrl: '/' });
     };
 
     return (
@@ -73,16 +85,38 @@ export default function SignIn() {
                             {loading ? 'Signing In...' : 'Sign In'}
                         </button>
                     </div>
-                    <div className="text-center text-white mt-4">
-                        <p className="mb-2 text-sm">Don&apos;t have an account?</p>
-                        <button
-                            onClick={() => router.push('/signup')}
-                            className="text-blue-500 hover:underline focus:outline-none text-sm"
-                        >
-                            Sign Up
-                        </button>
-                    </div>
                 </form>
+
+                <div className="text-white text-center p-3">
+                    Sign In Using:
+                </div>
+                <div className="flex justify-center space-x-4 p-3">
+                    <button
+                        onClick={handleGoogleSignIn}
+                        className="text-white py-3 px-6 rounded-md shadow-md hover:bg-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 transition-transform transform active:scale-95"
+                        disabled={loading}
+                    >
+                        <FcGoogle size={24} />
+                    </button>
+                    <button
+                        onClick={handleGitHubSignIn}
+                        className="text-white py-3 px-6 rounded-md shadow-md hover:bg-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 transition-transform transform active:scale-95"
+                        disabled={loading}
+                    >
+                        <FaGithub size={24} />
+                    </button>
+                </div>
+
+                <div className="text-center text-white mt-4">
+                    <p className="mb-2 text-sm">Don&apos;t have an account?</p>
+                    <button
+                        onClick={() => router.push('/signup')}
+                        className="text-blue-500 hover:underline focus:outline-none text-sm"
+                    >
+                        Sign Up
+                    </button>
+                </div>
+
                 {loading && (
                     <div className="absolute inset-0 flex justify-center items-center bg-zinc-900 bg-opacity-75 rounded-lg">
                         <div className="w-12 h-12 border-t-4 border-blue-500 border-solid rounded-full animate-spin"></div>
